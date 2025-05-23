@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team Absence Calendar</title>
+
+    <!-- FullCalendar CSS -->
+    <link href="fullcalendar-6.1.15/dist/index.min.css" rel="stylesheet">
+    <style>
+        #calendar {
+            width: 70%; /* Adjust calendar width */
+            margin: 20px auto; /* Center the calendar */
+            height: 500px; /* Calendar height */
+        }
+        #teamFilter {
+            width: 50%;
+            margin: 20px auto;
+            display: block;
+            padding: 10px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Team Filter -->
+    <select id="teamFilter">
+        <option value="">All Teams</option>
+        <option value="1">Team 1</option>
+        <option value="2">Team 2</option>
+        <option value="3">Team 3</option>
+    </select>
+
+    <!-- Calendar -->
+    <div id="calendar"></div>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- FullCalendar JS -->
+    <script src="fullcalendar-6.1.15/dist/index.global.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const calendarEl = document.getElementById('calendar');
+            const teamFilter = document.getElementById('teamFilter');
+
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                events: function(fetchInfo, successCallback, failureCallback) {
+                    // Fetch events dynamically based on selected team
+                    const equipe_id = teamFilter.value;
+                    const url = equipe_id ? `aaa.php?equipe_id=${equipe_id}` : `aaa.php`;
+
+                    fetch(url)
+                        .then(response => response.json())
+                        .then(data => successCallback(data))
+                        .catch(error => failureCallback(error));
+                },
+                eventDidMount: function(info) {
+                    // Custom colors based on status
+                    if (info.event.extendedProps.status === 'approuve') {
+                        info.el.style.backgroundColor = 'lightgreen';
+                    } else if (info.event.extendedProps.status === 'en_attente') {
+                        info.el.style.backgroundColor = 'lightcoral';
+                    }
+                }
+            });
+
+            calendar.render();
+
+            // Reload calendar events when the team filter changes
+            teamFilter.addEventListener('change', function () {
+                calendar.refetchEvents();
+            });
+        });
+    </script>
+</body>
+</html>
